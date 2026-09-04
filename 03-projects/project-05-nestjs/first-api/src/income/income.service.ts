@@ -12,7 +12,7 @@ import { UserRepository } from 'src/user/user.repository';
 import { DataSource } from 'typeorm';
 import { IncomeHistoryEntity } from 'src/history/history.entity';
 import { QueryIncomeDto } from './dto/query-income.dto';
-
+import { IncomeNotFoundException } from './exceptions/income-not-found.exception';
 @Injectable()
 export class IncomeService {
   constructor(
@@ -73,7 +73,7 @@ export class IncomeService {
     const income = await this.incomeRepository.findById(incomeId);
 
     if (!income) {
-      throw new NotFoundException(`Income with id ${incomeId} not found`);
+      throw new IncomeNotFoundException(incomeId);
     }
     if (income.user.id !== userId) {
       throw new ForbiddenException("You cannot access another user's income");
@@ -93,7 +93,7 @@ export class IncomeService {
     const existingIncome = await this.incomeRepository.findById(incomeId);
 
     if (!existingIncome) {
-      throw new NotFoundException(`Income with id ${incomeId} not found`);
+      throw new IncomeNotFoundException(incomeId);
     }
 
     if (existingIncome.user.id !== userId) {
