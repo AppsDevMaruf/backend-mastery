@@ -11,6 +11,7 @@ import { UpdateIncomeDto } from './dto/update-income.dto';
 import { UserRepository } from 'src/user/user.repository';
 import { DataSource } from 'typeorm';
 import { IncomeHistoryEntity } from 'src/history/history.entity';
+import { QueryIncomeDto } from './dto/query-income.dto';
 
 @Injectable()
 export class IncomeService {
@@ -184,8 +185,19 @@ export class IncomeService {
       return savedIncome;
     });
   }
-  findAllIncomesByUserId(userId: number): Promise<IncomeEntity[]> {
-    return this.incomeRepository.findAllIncomesByUserId(userId);
+  findAllIncomesByUserId(
+    userId: number,
+    query: QueryIncomeDto,
+  ): Promise<{
+    data: IncomeEntity[];
+    meta: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  }> {
+    return this.incomeRepository.findAllIncomesByUserId(userId, query);
   }
   async deleteOwnIncome(userId: number, incomeId: number) {
     const income = await this.incomeRepository.findById(incomeId);

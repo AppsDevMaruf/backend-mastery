@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { IncomeEntity } from './income.entity';
+import { QueryIncomeDto } from './dto/query-income.dto';
 
 @Injectable()
 export class IncomeRepository {
@@ -20,17 +21,48 @@ export class IncomeRepository {
       },
     });
   }
-  findAllIncomesByUserId(userId: number): Promise<IncomeEntity[]> {
-    return this.incomeRepository.find({
-      where: {
-        user: {
-          id: userId,
-        },
+  async findAllIncomesByUserId(userId: number, query: QueryIncomeDto) {
+    const {
+      page = 1,
+      limit = 10,
+      minIncome,
+      maxIncome,
+      sortBy = 'id',
+      sortOrder = 'DESC',
+    } = query;
+
+    const skip = (page - 1) * limit;
+
+    const queryBuilder = this.incomeRepository
+      .createQueryBuilder('income')
+      .leftJoinAndSelect('income.user', 'user')
+      .where('user.id = :userId', { userId });
+
+    if (minIncome !== undefined) {
+      queryBuilder.andWhere('income.totalIncome >= :minIncome', {
+        minIncome,
+      });
+    }
+
+    if (maxIncome !== undefined) {
+      queryBuilder.andWhere('income.totalIncome <= :maxIncome', {
+        maxIncome,
+      });
+    }
+
+    queryBuilder.orderBy(`income.${sortBy}`, sortOrder).skip(skip).take(limit);
+
+    const [data, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
-      relations: {
-        user: true,
-      },
-    });
+    };
   }
 
   findById(id: number): Promise<IncomeEntity | null> {

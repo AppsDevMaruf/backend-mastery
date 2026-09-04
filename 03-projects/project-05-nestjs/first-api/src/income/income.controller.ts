@@ -8,9 +8,9 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import type { Request } from 'express';
 import { IncomeService } from './income.service';
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { UpdateIncomeDto } from './dto/update-income.dto';
@@ -21,6 +21,7 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Permissions } from 'src/auth/decorators/permissions.decorator';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 import { Permission } from 'src/auth/permissions/permission.enum';
+import { QueryIncomeDto } from './dto/query-income.dto';
 
 @Controller('incomes')
 export class IncomesController {
@@ -37,13 +38,8 @@ export class IncomesController {
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions(Permission.INCOME_READ_OWN)
   @Get()
-  findAll(@CurrentUser() reqUser: JwtPayload) {
-    return this.incomeService.findAllIncomesByUserId(reqUser.sub);
-  }
-  @UseGuards(JwtAuthGuard)
-  @Get()
-  getIncomes() {
-    return this.incomeService.getIncomes();
+  findAll(@CurrentUser() reqUser: JwtPayload, @Query() query: QueryIncomeDto) {
+    return this.incomeService.findAllIncomesByUserId(reqUser.sub, query);
   }
   @UseGuards(JwtAuthGuard)
   @Get('me')
