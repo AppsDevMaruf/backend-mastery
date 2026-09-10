@@ -1,17 +1,30 @@
 import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import request from 'supertest';
+import request, { type Response } from 'supertest';
 import { AppModule } from '../src/app.module';
+
+interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+interface AuthResponseBody {
+  data: AuthTokens;
+}
+
+function getAuthTokens(response: Response): AuthTokens {
+  const body = response.body as AuthResponseBody;
+  return body.data;
+}
 
 describe('Auth e2e', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule =
-      await Test.createTestingModule({
-        imports: [AppModule],
-      }).compile();
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
 
     app = moduleFixture.createNestApplication();
 
@@ -64,7 +77,7 @@ describe('Auth e2e', () => {
     expect([200, 201]).toContain(loginResponse.status);
 
     // 3. Capture access token
-    const accessToken = loginResponse.body.data.accessToken;
+    const { accessToken } = getAuthTokens(loginResponse);
 
     expect(accessToken).toBeDefined();
     expect(typeof accessToken).toBe('string');
@@ -77,15 +90,13 @@ describe('Auth e2e', () => {
     expect(incomesResponse.status).toBe(200);
   });
   it('should reject protected incomes endpoint without access token', async () => {
-    await request(app.getHttpServer())
-      .get('/incomes')
-      .expect(401);
+    await request(app.getHttpServer()).get('/incomes').expect(401);
   });
   it('should register, login and access protected incomes endpoint', async () => {
     const email = `e2e-${Date.now()}@example.com`;
     const password = 'StrongPassword123!';
 
-    const registerResponse = await request(app.getHttpServer())
+    await request(app.getHttpServer())
       .post('/auth/register')
       .send({
         name: 'E2E User',
@@ -102,7 +113,7 @@ describe('Auth e2e', () => {
       })
       .expect(200);
 
-    const accessToken = loginResponse.body.data.accessToken;
+    const { accessToken } = getAuthTokens(loginResponse);
 
     expect(accessToken).toBeDefined();
     expect(typeof accessToken).toBe('string');
@@ -130,7 +141,7 @@ describe('Auth e2e', () => {
       .send({ email, password })
       .expect(200);
 
-    const accessToken = loginResponse.body.data.accessToken;
+    const { accessToken } = getAuthTokens(loginResponse);
 
     await request(app.getHttpServer())
       .get('/auth/admin-test')
@@ -138,9 +149,7 @@ describe('Auth e2e', () => {
       .expect(403);
   });
   it('should reject admin endpoint without token', async () => {
-    await request(app.getHttpServer())
-      .get('/auth/admin-test')
-      .expect(401);
+    await request(app.getHttpServer()).get('/auth/admin-test').expect(401);
   });
   it('should rotate refresh token and reject the old refresh token', async () => {
     const email = `refresh-${Date.now()}@example.com`;
@@ -165,7 +174,7 @@ describe('Auth e2e', () => {
       })
       .expect(200);
 
-    const oldRefreshToken = loginResponse.body.data.refreshToken;
+    const { refreshToken: oldRefreshToken } = getAuthTokens(loginResponse);
 
     expect(oldRefreshToken).toBeDefined();
     expect(typeof oldRefreshToken).toBe('string');
@@ -178,8 +187,8 @@ describe('Auth e2e', () => {
       })
       .expect(200);
 
-    const newAccessToken = refreshResponse.body.data.accessToken;
-    const newRefreshToken = refreshResponse.body.data.refreshToken;
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+      getAuthTokens(refreshResponse);
 
     expect(newAccessToken).toBeDefined();
     expect(newRefreshToken).toBeDefined();
@@ -219,8 +228,7 @@ describe('Auth e2e', () => {
       })
       .expect(200);
 
-    const accessToken = loginResponse.body.data.accessToken;
-    const refreshToken = loginResponse.body.data.refreshToken;
+    const { accessToken, refreshToken } = getAuthTokens(loginResponse);
 
     expect(accessToken).toBeDefined();
     expect(refreshToken).toBeDefined();

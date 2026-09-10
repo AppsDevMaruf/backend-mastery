@@ -39,7 +39,7 @@ describe('IncomeService', () => {
         },
         {
           provide: UserRepository,
-          
+
           useValue: mockUserRepository,
         },
         {
@@ -57,9 +57,15 @@ describe('IncomeService', () => {
   describe('createIncome', () => {
     it('should create an income successfully', async () => {
       // Arrange
-      const user = { id: 1, name: 'Maruf', };
-      const dto = { id: 1, annualIncome: 500000, bonus: 50000,};
-      const savedIncome = { id: 10, annualIncome: 500000, bonus: 50000,totalIncome: 550000,user,};
+      const user = { id: 1, name: 'Maruf' };
+      const dto = { id: 1, annualIncome: 500000, bonus: 50000 };
+      const savedIncome = {
+        id: 10,
+        annualIncome: 500000,
+        bonus: 50000,
+        totalIncome: 550000,
+        user,
+      };
 
       mockUserRepository.findById.mockResolvedValue(user);
       mockIncomeRepository.saveIncome.mockResolvedValue(savedIncome);
@@ -383,9 +389,9 @@ describe('IncomeService', () => {
 
       mockIncomeRepository.findById.mockResolvedValue(income);
 
-      await expect(
-        service.getIncomeById(1, 10),
-      ).rejects.toThrow(ForbiddenException);
+      await expect(service.getIncomeById(1, 10)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
     it('should return income when it belongs to the user', async () => {
       const income = {
@@ -562,7 +568,11 @@ describe('IncomeService', () => {
       mockUserRepository.findById.mockResolvedValue(user);
 
       mockDataSource.transaction.mockImplementation(
-        async (callback: any) => callback(mockManager),
+        (
+          callback: (
+            manager: typeof mockManager,
+          ) => Promise<typeof savedIncome>,
+        ) => callback(mockManager),
       );
 
       // Act
@@ -584,10 +594,7 @@ describe('IncomeService', () => {
         },
       );
 
-      expect(mockManager.save).toHaveBeenNthCalledWith(
-        1,
-        createdIncome,
-      );
+      expect(mockManager.save).toHaveBeenNthCalledWith(1, createdIncome);
 
       expect(mockManager.create).toHaveBeenNthCalledWith(
         2,
@@ -597,10 +604,7 @@ describe('IncomeService', () => {
         },
       );
 
-      expect(mockManager.save).toHaveBeenNthCalledWith(
-        2,
-        createdHistory,
-      );
+      expect(mockManager.save).toHaveBeenNthCalledWith(2, createdHistory);
 
       expect(result).toEqual(savedIncome);
     });
@@ -634,17 +638,18 @@ describe('IncomeService', () => {
         },
       };
 
-      mockIncomeRepository.findAllIncomesByUserId.mockImplementation(
-        async () => repositoryResult,
+      mockIncomeRepository.findAllIncomesByUserId.mockResolvedValue(
+        repositoryResult,
       );
 
       const result = await service.findAllIncomesByUserId(1, query);
 
-      expect(
-        mockIncomeRepository.findAllIncomesByUserId,
-      ).toHaveBeenCalledWith(1, query);
+      expect(mockIncomeRepository.findAllIncomesByUserId).toHaveBeenCalledWith(
+        1,
+        query,
+      );
 
       expect(result).toEqual(repositoryResult);
     });
   });
- });
+});

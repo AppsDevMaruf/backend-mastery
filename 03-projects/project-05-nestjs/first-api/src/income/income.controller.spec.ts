@@ -80,10 +80,7 @@ describe('IncomesController', () => {
 
       const result = await controller.createIncome(user, body);
 
-      expect(mockIncomeService.createIncome).toHaveBeenCalledWith(
-        1,
-        body,
-      );
+      expect(mockIncomeService.createIncome).toHaveBeenCalledWith(1, body);
 
       expect(result).toEqual(serviceResult);
     });
@@ -119,15 +116,14 @@ describe('IncomesController', () => {
         },
       };
 
-      mockIncomeService.findAllIncomesByUserId.mockResolvedValue(
-        serviceResult,
-      );
+      mockIncomeService.findAllIncomesByUserId.mockResolvedValue(serviceResult);
 
       const result = await controller.findAll(user, query);
 
-      expect(
-        mockIncomeService.findAllIncomesByUserId,
-      ).toHaveBeenCalledWith(1, query);
+      expect(mockIncomeService.findAllIncomesByUserId).toHaveBeenCalledWith(
+        1,
+        query,
+      );
 
       expect(result).toEqual(serviceResult);
     });
@@ -166,9 +162,7 @@ describe('IncomesController', () => {
 
       const result = await controller.getIncomeById(user, 10);
 
-      expect(
-        mockIncomeService.getIncomeById,
-      ).toHaveBeenCalledWith(1, 10);
+      expect(mockIncomeService.getIncomeById).toHaveBeenCalledWith(1, 10);
 
       expect(result).toEqual(serviceResult);
     });
@@ -195,19 +189,15 @@ describe('IncomesController', () => {
         },
       };
 
-      mockIncomeService.updateOwnIncome.mockResolvedValue(
-        serviceResult,
-      );
+      mockIncomeService.updateOwnIncome.mockResolvedValue(serviceResult);
 
-      const result = await controller.updateIncome(
-        user,
+      const result = await controller.updateIncome(user, 10, body);
+
+      expect(mockIncomeService.updateOwnIncome).toHaveBeenCalledWith(
+        1,
         10,
         body,
       );
-
-      expect(
-        mockIncomeService.updateOwnIncome,
-      ).toHaveBeenCalledWith(1, 10, body);
 
       expect(result).toEqual(serviceResult);
     });
@@ -235,19 +225,15 @@ describe('IncomesController', () => {
         },
       };
 
-      mockIncomeService.replaceOwnIncome.mockResolvedValue(
-        serviceResult,
-      );
+      mockIncomeService.replaceOwnIncome.mockResolvedValue(serviceResult);
 
-      const result = await controller.replaceIncome(
-        user,
+      const result = await controller.replaceIncome(user, 10, body);
+
+      expect(mockIncomeService.replaceOwnIncome).toHaveBeenCalledWith(
+        1,
         10,
         body,
       );
-
-      expect(
-        mockIncomeService.replaceOwnIncome,
-      ).toHaveBeenCalledWith(1, 10, body);
 
       expect(result).toEqual(serviceResult);
     });
@@ -275,14 +261,12 @@ describe('IncomesController', () => {
         serviceResult,
       );
 
-      const result = await controller.createIncomeWithHistory(
-        user,
+      const result = await controller.createIncomeWithHistory(user, body);
+
+      expect(mockIncomeService.createIncomeWithHistory).toHaveBeenCalledWith(
+        1,
         body,
       );
-
-      expect(
-        mockIncomeService.createIncomeWithHistory,
-      ).toHaveBeenCalledWith(1, body);
 
       expect(result).toEqual(serviceResult);
     });
@@ -302,15 +286,11 @@ describe('IncomesController', () => {
         },
       };
 
-      mockIncomeService.deleteOwnIncome.mockResolvedValue(
-        serviceResult,
-      );
+      mockIncomeService.deleteOwnIncome.mockResolvedValue(serviceResult);
 
       const result = await controller.deleteIncome(user, 10);
 
-      expect(
-        mockIncomeService.deleteOwnIncome,
-      ).toHaveBeenCalledWith(1, 10);
+      expect(mockIncomeService.deleteOwnIncome).toHaveBeenCalledWith(1, 10);
 
       expect(result).toEqual(serviceResult);
     });
