@@ -109,5 +109,6 @@ jobs:
           target: production
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/first-api:latest
-            ghcr.io/${{ github.repository_owner }}/first-api:${{ github.sha }}
+           ghcr.io/appsdevmaruf/first-api:latest
+           ghcr.io/appsdevmaruf/first-api:${{ github.sha }}
+            
