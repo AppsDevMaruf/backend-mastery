@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -19,6 +20,24 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
+
+  private hashRefreshToken(refreshToken: string): string {
+    return createHash('sha256').update(refreshToken).digest('hex');
+  }
+
+  private refreshTokenMatches(
+    refreshToken: string,
+    storedHash: string,
+  ): boolean {
+    const tokenHash = Buffer.from(this.hashRefreshToken(refreshToken), 'hex');
+    const expectedHash = Buffer.from(storedHash, 'hex');
+
+    return (
+      tokenHash.length === expectedHash.length &&
+      timingSafeEqual(tokenHash, expectedHash)
+    );
+  }
+
   async register(data: RegisterDto) {
     const existingUser = await this.userRepository.findByEmail(data.email);
 
@@ -70,13 +89,16 @@ export class AuthService {
       ),
     });
 
-    const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.getOrThrow<JwtSignOptions['expiresIn']>(
-        'JWT_REFRESH_EXPIRES_IN',
-      ),
-    });
-    const refreshTokenHash = await bcrypt.hash(refreshToken, 12);
+    const refreshToken = await this.jwtService.signAsync(
+      { ...payload, jti: randomUUID() },
+      {
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.getOrThrow<JwtSignOptions['expiresIn']>(
+          'JWT_REFRESH_EXPIRES_IN',
+        ),
+      },
+    );
+    const refreshTokenHash = this.hashRefreshToken(refreshToken);
 
     await this.userRepository.updateRefreshTokenHash(user.id, refreshTokenHash);
 
@@ -113,7 +135,10 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token is not valid');
     }
 
-    const isValid = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+    const isValid = this.refreshTokenMatches(
+      refreshToken,
+      user.refreshTokenHash,
+    );
 
     if (!isValid) {
       throw new UnauthorizedException('Refresh token is not valid');
@@ -133,14 +158,17 @@ export class AuthService {
       ),
     });
 
-    const newRefreshToken = await this.jwtService.signAsync(newPayload, {
-      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.getOrThrow<JwtSignOptions['expiresIn']>(
-        'JWT_REFRESH_EXPIRES_IN',
-      ),
-    });
+    const newRefreshToken = await this.jwtService.signAsync(
+      { ...newPayload, jti: randomUUID() },
+      {
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.getOrThrow<JwtSignOptions['expiresIn']>(
+          'JWT_REFRESH_EXPIRES_IN',
+        ),
+      },
+    );
 
-    const newRefreshTokenHash = await bcrypt.hash(newRefreshToken, 12);
+    const newRefreshTokenHash = this.hashRefreshToken(newRefreshToken);
 
     await this.userRepository.updateRefreshTokenHash(
       user.id,

@@ -15,13 +15,13 @@ import { IncomeService } from './income.service';
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { UpdateIncomeDto } from './dto/update-income.dto';
 import { ReplaceIncomeDto } from './dto/replace-income.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import type { JwtPayload } from 'src/auth/types/jwt-payload.interface';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { Permissions } from 'src/auth/decorators/permissions.decorator';
-import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
-import { Permission } from 'src/auth/permissions/permission.enum';
 import { QueryIncomeDto } from './dto/query-income.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import type { JwtPayload } from '../auth/types/jwt-payload.interface';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Permissions } from '../auth/decorators/permissions.decorator';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { Permission } from '../auth/permissions/permission.enum';
 
 @Controller('incomes')
 export class IncomesController {

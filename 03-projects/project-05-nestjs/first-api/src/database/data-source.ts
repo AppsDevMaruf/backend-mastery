@@ -1,8 +1,14 @@
-import 'dotenv/config';
+import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
 import { IncomeEntity } from '../income/income.entity';
 import { UserEntity } from '../user/user.entity';
 import { IncomeHistoryEntity } from '../history/history.entity';
+
+const nodeEnv = process.env.NODE_ENV ?? 'development';
+
+config({
+  path: [`.env.${nodeEnv}.local`, `.env.${nodeEnv}`, '.env'],
+});
 
 function getRequiredEnv(name: string): string {
   const value = process.env[name];

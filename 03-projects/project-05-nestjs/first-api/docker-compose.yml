@@ -1,0 +1,78 @@
+services:
+
+  db:
+    image: postgres:17-alpine
+    container_name: first-api-db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DOCKER_DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  api:
+    build:
+      context: .
+      target: production
+
+    container_name: first-api-app
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DOCKER_DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+
+    ports:
+      - "3000:3000"
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+
+  migrate:
+    build:
+      context: .
+      target: production
+
+    env_file:
+      - .env
+
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DOCKER_DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+
+    command: npm run migration:run
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    profiles:
+      - tools
+
+
+volumes:
+  postgres_data:

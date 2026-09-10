@@ -16,7 +16,7 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import type { JwtPayload } from './types/jwt-payload.interface';
 import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './decorators/roles.guard';
-import { UserRole } from 'src/user/user.entity';
+import { UserRole } from '../user/user.entity';
 import { Permission } from './permissions/permission.enum';
 import { PermissionsGuard } from './guards/permissions.guard';
 import { Permissions } from './decorators/permissions.decorator';

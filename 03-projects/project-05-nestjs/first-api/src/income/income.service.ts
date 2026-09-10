@@ -8,9 +8,9 @@ import { IncomeEntity } from './income.entity';
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { ReplaceIncomeDto } from './dto/replace-income.dto';
 import { UpdateIncomeDto } from './dto/update-income.dto';
-import { UserRepository } from 'src/user/user.repository';
+import { UserRepository } from '../user/user.repository';
 import { DataSource } from 'typeorm';
-import { IncomeHistoryEntity } from 'src/history/history.entity';
+import { IncomeHistoryEntity } from '../history/history.entity';
 import { QueryIncomeDto } from './dto/query-income.dto';
 import { IncomeNotFoundException } from './exceptions/income-not-found.exception';
 @Injectable()
