@@ -28,6 +28,9 @@ jobs:
           cache: npm
           cache-dependency-path: 03-projects/project-05-nestjs/first-api/package-lock.json
 
+      - name: Setup npm
+        run: npm install -g npm@11.6.2
+
       - name: Install dependencies
         run: npm ci
 
