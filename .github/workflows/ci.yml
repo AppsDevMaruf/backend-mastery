@@ -13,6 +13,38 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17-alpine
+
+        env:
+          POSTGRES_USER: marufalam
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bd_tax_test
+
+        ports:
+          - 5432:5432
+
+        options: >-
+          --health-cmd="pg_isready -U marufalam -d bd_tax_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      NODE_ENV: test
+
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USERNAME: marufalam
+      DB_PASSWORD: postgres
+      DB_NAME: bd_tax_test
+
+      JWT_ACCESS_SECRET: test-access-secret-test-access-secret-1234
+      JWT_REFRESH_SECRET: test-refresh-secret-test-refresh-secret-1234
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+
     defaults:
       run:
         working-directory: 03-projects/project-05-nestjs/first-api
@@ -39,6 +71,12 @@ jobs:
 
       - name: Unit tests
         run: npm test -- --runInBand
+
+      - name: Run migrations
+        run: npm run migration:run
+
+      - name: E2E tests
+        run: npm run test:e2e
 
       - name: Build
         run: npm run build
